@@ -26,92 +26,104 @@ This project sets up a **self-hosted monitoring stack** on a Kubernetes cluster 
 
 ---
 
-## 🔹 1. Environment Setup (5 pts)
+## 🔹 1. Environment Setup
 
 1. Install prerequisites:
 
    ```bash
-   docker --version
-   kind --version
-   kubectl version --client
-   helm version
+   docker
+   kind
+   k9s
+   helm
    ```
 
-2. Create a kind cluster:
+2. Create a namespace and a kind cluster:
 
    ```bash
-   kind create cluster --name monitoring-cluster
+   kubectl create namespace metrice
+   kind create cluster --config kind.yaml 
    ```
 
 3. Verify:
 
    ```bash
    kubectl get nodes
+   or in k9s <img width="1271" height="937" alt="image" src="https://github.com/user-attachments/assets/9d5508b9-3f58-4bbe-a930-b32fda00379c" />
+
    ```
 
 ---
 
-## 🔹 2. Install Prometheus & Grafana (10 pts)
+## 🔹 2. Install Prometheus & Grafana
 
-We use the **kube-prometheus-stack** Helm chart, which bundles Prometheus, Grafana, Node Exporter, and kube-state-metrics.
+*Prometheus*
+
+I used the prometheus-comunity helm chart.
 
 ```bash
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
-kubectl create namespace monitoring
-
-helm install monitoring prometheus-community/kube-prometheus-stack -n monitoring
 ```
 
 Verify installation:
 
 ```bash
-kubectl get pods -n monitoring
+kubectl get pods -n metrics
 ```
-
-Expected: Prometheus, Grafana, Node Exporter, and supporting pods should be running.
+<img width="1500" height="276" alt="image" src="https://github.com/user-attachments/assets/48e79c5e-e905-4445-9670-e8727a488956" />
 
 ---
 
-## 🔹 3. Node Exporter (5 pts)
+```
+helm install prometheus prometheus-community/prometheus -n metrics
+```
+Check that Prometheus is running on http://localhost:9090 after port forwarding
 
-Node Exporter is deployed automatically by kube-prometheus-stack as a **DaemonSet**. Prometheus is pre-configured to scrape it.
+<img width="975" height="757" alt="image" src="https://github.com/user-attachments/assets/83c680d3-30ca-4bbb-b136-f86168b0a639" />
 
-Check:
+*Grafana*
 
-```bash
-kubectl get pods -n monitoring -l app.kubernetes.io/name=node-exporter
+```
+helm repo add grafana https://grafana.github.io/helm-charts 
+helm repo update
+helm install grafana grafana/grafana -n metrics
 ```
 
-You should see one `node-exporter` pod per cluster node.
+Check that Grafana pod is running.
+
+<img width="1503" height="420" alt="image" src="https://github.com/user-attachments/assets/d9824c8d-ea3c-40c0-aee5-4333d6955a9a" />
+
+Port forward the Grafana service and check that is running on https://localhost:3000.
+
+```
+kubectl port-forward svc/grafana 3000:80 -n metrics
+
+```
+
+<img width="1013" height="742" alt="image" src="https://github.com/user-attachments/assets/acde7a74-7156-4d9e-90a2-1a40b65399c2" />
+
+
+
+## 🔹 3. Node Exporter Setup
+
+Node Exporter is deployed automatically through the prometheus-community helm chart as a **DaemonSet**. Prometheus is pre-configured to scrape it.
+
+
+<img width="1466" height="152" alt="image" src="https://github.com/user-attachments/assets/e4423e95-729e-4c09-8905-aea9ece26799" />
+
 
 ---
 
-## 🔹 4. cAdvisor Metrics (5 pts)
+## 🔹 4. cAdvisor Metrics
 
 In Kubernetes, **kubelet already embeds cAdvisor** and exposes metrics at `/metrics/cadvisor`. The Helm chart configures Prometheus to scrape these automatically, so you don’t need to deploy a separate DaemonSet.
 
-Check Prometheus targets:
+<img width="1506" height="653" alt="image" src="https://github.com/user-attachments/assets/cd2ddb90-c54c-4411-a016-9572301c42bd" />
 
-```bash
-kubectl port-forward svc/monitoring-kube-prometheus-prometheus -n monitoring 9090:9090
-```
 
-Open [http://localhost:9090/targets](http://localhost:9090/targets) → look for `kubelet` targets with `/metrics/cadvisor`.
+## 🔹 5. Grafana Setup
 
----
-
-## 🔹 5. Grafana Setup (5 pts)
-
-Expose Grafana locally:
-
-```bash
-kubectl port-forward svc/monitoring-grafana -n monitoring 3000:80
-```
-
-Access: [http://localhost:3000](http://localhost:3000)
-
-Get credentials:
+Grafana is already accesible through port 3000 on localhost. The next step is to get the login credentials, where username is _admin_ and the password can be found out like so:
 
 ```bash
 kubectl get secret monitoring-grafana -n monitoring -o jsonpath="{.data.admin-password}" | base64 --decode; echo
@@ -120,11 +132,20 @@ kubectl get secret monitoring-grafana -n monitoring -o jsonpath="{.data.admin-pa
 * Username: `admin`
 * Password: (output above)
 
-Verify Prometheus data source under **Connections → Data sources**.
+Add the Prometheus data source under **Connections → Data sources**.
+
+Since both Prometheus and Grafana are deployed inside the cluster, the data source can be specified as a fqdn.
+
+<img width="1098" height="560" alt="image" src="https://github.com/user-attachments/assets/3933284a-001b-41f2-835e-c9d64aeaf14f" />
+
+Test and save the connection.
+
+<img width="808" height="248" alt="image" src="https://github.com/user-attachments/assets/0c684c52-ffaa-4544-8f01-46d93c115a4b" />
+
 
 ---
 
-## 🔹 6. Create Grafana Dashboard (10 pts)
+## 🔹 6. Create Grafana Dashboard
 
 ### Panel 1 — CPU Usage
 
