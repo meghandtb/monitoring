@@ -202,31 +202,4 @@ stress --cpu 1 --timeout 300
 
 Within 1–2 minutes, the Grafana alert should fire.
 
-📸 *Screenshot placeholder: Alert firing (red state).*
 
----
-
-## 🔹 8. Documentation & Deliverables (5 pts)
-
-This README documents:
-
-* Setup of kind cluster
-* Installation of Prometheus, Grafana, Node Exporter
-* Validation of cAdvisor metrics
-* Grafana dashboard creation
-* Alert rule setup and testing
-
-Include screenshots in your submission for verification.
-
----
-
-## ✅ Grading Checklist
-
-* [x] Virtual machine or container host setup (**5 pts**)
-* [x] Install Prometheus & Grafana + scrape configs (**10 pts**)
-* [x] Node Exporter configured (**5 pts**)
-* [x] cAdvisor configured (via kubelet) (**5 pts**)
-* [x] Grafana connected to Prometheus (**5 pts**)
-* [x] Dashboard with CPU, Memory, Container stats (**10 pts**)
-* [x] Alert rule configured and tested (**10 pts**)
-* [x] Documentation with screenshots (**5 pts**)
