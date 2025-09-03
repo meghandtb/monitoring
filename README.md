@@ -111,6 +111,9 @@ Node Exporter is deployed automatically through the prometheus-community helm ch
 
 <img width="1466" height="152" alt="image" src="https://github.com/user-attachments/assets/e4423e95-729e-4c09-8905-aea9ece26799" />
 
+Node exporter is already a defined metric as a target for Prometheus.
+
+<img width="1446" height="781" alt="image" src="https://github.com/user-attachments/assets/e3d858c3-9a5c-49bf-b1f8-9217dcc74fd8" />
 
 ---
 
