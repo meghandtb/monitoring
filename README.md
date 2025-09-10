@@ -1,17 +1,45 @@
 Section 1: Conceptual Understanding (20 pts)
 1. Explain the key differences between proactive and reactive monitoring. (5 pts)
-2. What are MTTD and MTTR? Why are they important? (5 pts)
-3. Describe a typical incident lifecycle and the role of DevOps in each stage. (5 pts)
-4. List three external monitoring platforms and their advantages. (5 pts)
+
+The difference between proactive and reactive monitoring is related to what stage the issues are identitied and fixed.
+Proctive monitoring implies continually observing the systems in order to identify and fix incidents before affecting the end users. It helps in early detection of anomalies and failures, reduces donwtime and improves performance.
+On the other hand reactive monitoring means indentifying and fixing the issue after it already happened and impacted the end users. This can lead to downtime while the issue is being handled by the corresponding team.
+
+3. What are MTTD and MTTR? Why are they important? (5 pts)
+MTTD --> mean time to detect  --> the average time taken to detect an issue
+MTTR --> mean time to resolve --> the average time of fixing the issues
+
+5. Describe a typical incident lifecycle and the role of DevOps in each stage. (5 pts)
+The incident lifecycle management involves the following steps:
+
+-  Detection: the monitoring tools(Prometheus, Datadog)/solution implemented by the DevOps team are used to identify an issue/an anomaly. The monitoring system detects an issue and sends an alert (through alerting systems such as Pager Duty) to the responsible team.
+-  Response: the team is notified of the incident and needs to act accordingly in order to mitigate the impact
+-  Resolution: the root cause of the incident is verified/discovered/fixed
+-  Postincident/postmortem: review and document the lesson learned
+
+7. List three external monitoring platforms and their advantages. (5 pts)
+
+Datadog is a cloud native, SaaS based monitoring system, which seamlesly integrates with tools such as K8s, AWS.
+Dynatrace
 
 Section 2: Monitoring Tools Exploration (20 pts)
 5. What is Prometheus used for in monitoring? (5 pts)
+Prometheus is a self hosted monitoring solution, used in scraping the data from the monitored resources; it integrates with tools such as cAdvisor, NodeExporter in order to colect system metrics and sends those metrics to dashboarding solutions such as Grafana, which grafically desplays the sourced data.
 
 6. Describe how Grafana complements Prometheus. (5 pts)
+Grafana is a dashboard solution, it integrates with Prometheus and uses it as a data source for the metrics that it will represent in a dashboard form; it servers as a visual interface for the users of the monitoring solution
    
-7. What data does Node Exporter collect? Name three example metrics. (5 pts)
+8. What data does Node Exporter collect? Name three example metrics. (5 pts)
+Node exporter collects hardwared and OS metrics -> system metrics such as CPU/memory/disk.
    
-8. What is PagerDuty and how does it integrate with monitoring tools? (5 pts)
+10. What is PagerDuty and how does it integrate with monitoring tools? (5 pts)
+Pagerduty is an incident management platform which does the following:
+
+- Integrates with monittoring tools such as Datadog/Prometheus
+- It allows the DevOps team to configure an on-call scheduling and alert routing as well as escalation policies for unacknowledged alerts -> who to escalate based on priority
+- It offers postmortems and runback integration
+- Reduces MTTR (Mean Time To Respond) by paging the right person
+
 
 Section 3: Hands-On Project – Build a Self-Hosted Monitoring Stack (60 pts)
 
