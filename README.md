@@ -392,7 +392,8 @@ Add a contact point and configure a notification message.
 
 Save alert.
 
-<img width="1935" height="828" alt="image" src="https://github.com/user-attachments/assets/2d3b20c5-00d8-46a8-bc32-28b7406d80d4" />
+<img width="884" height="283" alt="image" src="https://github.com/user-attachments/assets/f45ebe54-6804-42a7-bf26-34dcc060a4d0" />
+
 
 ### Test the alert
 
