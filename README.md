@@ -2,43 +2,55 @@ Section 1: Conceptual Understanding (20 pts)
 1. Explain the key differences between proactive and reactive monitoring. (5 pts)
 
 The difference between proactive and reactive monitoring is related to what stage the issues are identitied and fixed.
-Proctive monitoring implies continually observing the systems in order to identify and fix incidents before affecting the end users. It helps in early detection of anomalies and failures, reduces donwtime and improves performance.
-On the other hand reactive monitoring means indentifying and fixing the issue after it already happened and impacted the end users. This can lead to downtime while the issue is being handled by the corresponding team.
+
+Proctive monitoring implies continuously observing the systems and analyzing metrics in order to identify and fix incidents before they reach and impact the end users. It helps in early detection of anomalies and failures, reduces donwtime, improves performance and supports capacity planning. In this case, monitoring tools such as Prometheus and Datadog can come in handy; for example they can alert the engineers when memory usage keeps increasing until a certain threshold, so action can be taken before a failure occurs.
+
+On the other hand, reactive monitoring means indentifying and fixing the issue after it already happened and impacted the end users. This can lead to downtime while the issue is being handled by the corresponding team. An example in this case can be a helpdesk ticket raised in tools such as ITSM after the user already spotted an issue.
 
 3. What are MTTD and MTTR? Why are they important? (5 pts)
-MTTD --> mean time to detect  --> the average time taken to detect an issue
-MTTR --> mean time to resolve --> the average time of fixing the issues
+MTTD --> Mean Time to Detect  --> the average time taken to become aware of an issue after it occurs. A slow MTTD time can impact reliability, the system's uptime and even customer experience, while a faster time can reduce the impact of the damage.
+MTTR --> mean time to resolve --> the average time taken to completely resolve an incident after it was detected.
+
+Both MTTD and MTTR are key metrics for meeting SLAs and improving user experience and trust in a system. 
 
 5. Describe a typical incident lifecycle and the role of DevOps in each stage. (5 pts)
 The incident lifecycle management involves the following steps:
 
--  Detection: the monitoring tools(Prometheus, Datadog)/solution implemented by the DevOps team are used to identify an issue/an anomaly. The monitoring system detects an issue and sends an alert (through alerting systems such as Pager Duty) to the responsible team.
--  Response: the team is notified of the incident and needs to act accordingly in order to mitigate the impact
--  Resolution: the root cause of the incident is verified/discovered/fixed
--  Postincident/postmortem: review and document the lesson learned
+-  Detection: the monitoring tools such as Prometheus, Datadog (or the solutions implemented by the DevOps team) are used to identify an issue/an anomaly. The monitoring system detects an issue and sends an alert (through alerting systems such as Pager Duty) to the responsible team. DevOps ensures automated detection and alerting are up.
+-  Triage & classification: the incident's priority and impact are assesse. DevOps helps in defining the severity/priority levels and escalation policies and making sure they are automated.
+-  Response: the on-call team is notified of the incident and needs to act accordingly in order to mitigate the impact. The DevOps team needs to define auto-scaling, automates failover mechanisms in order to reduce the manual intervation in case of failure.
+-  Resolution: the root cause of the incident is verified/discovered/fixed. In this phase, the DevOps engineers may need to apply patches, rollback strategies or reconfigure infrastructure.
+-  Postincident/postmortem: review and document the lesson learned; The DevOps team needs to keep track of the incident and promote continuous improvement by updating playbooks, runbooks and monitoring configurations.
 
 7. List three external monitoring platforms and their advantages. (5 pts)
 
-Datadog is a cloud native, SaaS based monitoring system, which seamlesly integrates with tools such as K8s, AWS.
-Dynatrace
+External monitoring platforms are known for easy installation, usage and configuration. Three examples can be:
+
+- Datadog - a cloud native, SaaS based monitoring system, which seamlessly integrates with tools such as Kubernetes, AWS, Docker.
+- Dynatrace - also a SaaS solution which offers AI-powered observability with automatic root cause analysis; it helps in reducing manual troubleshooting.
+- New Relic - focused on monitoring application performance by offering detailed traicing of the transactions and easy an easy debugging framewoek for microservices and APIs.
 
 Section 2: Monitoring Tools Exploration (20 pts)
 5. What is Prometheus used for in monitoring? (5 pts)
-Prometheus is a self hosted monitoring solution, used in scraping the data from the monitored resources; it integrates with tools such as cAdvisor, NodeExporter in order to colect system metrics and sends those metrics to dashboarding solutions such as Grafana, which grafically desplays the sourced data.
+Prometheus is an open-source, self hosted monitoring solution, designed to scrape and collect data from its targets; it integrates with tools such as cAdvisor and NodeExporter in order to collect system metrics and send them to dashboarding solutions such as Grafana. Grafana helps with visualization and includes and Alertmanager component to notify teams when thresholds are reached.
 
 6. Describe how Grafana complements Prometheus. (5 pts)
-Grafana is a dashboard solution, it integrates with Prometheus and uses it as a data source for the metrics that it will represent in a dashboard form; it servers as a visual interface for the users of the monitoring solution
+Grafana is a dashboard solution. It integrates with Prometheus and it provides a visual interface for the metrics that Prometheus collects, by turning it into customizable visualiations with graphs, charts and alerts. 
    
 8. What data does Node Exporter collect? Name three example metrics. (5 pts)
-Node exporter collects hardwared and OS metrics -> system metrics such as CPU/memory/disk.
+Node exporter collects hardwared and OS level metrics from Linux/Unix hosts. These metrics usually reflect the helth of the infrastructure. Such metrics are:
+- CPU usage and load averages
+- Memory utilization
+- Disk I/O and filesystem space usage
+- Network traffic statistics
    
 10. What is PagerDuty and how does it integrate with monitoring tools? (5 pts)
-Pagerduty is an incident management platform which does the following:
+Pagerduty is an incident management and on-call schedulling platform, which intregates with monioring tools such as Prometheus, Grafana, Datadog, and performs the following:
 
-- Integrates with monittoring tools such as Datadog/Prometheus
-- It allows the DevOps team to configure an on-call scheduling and alert routing as well as escalation policies for unacknowledged alerts -> who to escalate based on priority
-- It offers postmortems and runback integration
-- Reduces MTTR (Mean Time To Respond) by paging the right person
+- It allows the DevOps team to configure an on-call scheduling and alert routing as well as escalation policies. Escalation policies can also be set for unaknowledged alerts -> who to page when alerts remain ignored for a longer amount of time.
+- It offers postmortems and runback integration.
+- Reduces MTTR (Mean Time To Respond) by paging the right person.
+- Automates incident response by integrating with collaboration tools such as Slack and Microsoft Teams.
 
 
 Section 3: Hands-On Project – Build a Self-Hosted Monitoring Stack (60 pts)
@@ -237,7 +249,7 @@ stress --cpu 1 --timeout 300
 Within 1–2 minutes, the Grafana alert should fire.
 
 
-__BONUS SOLUTION__
+## 🔹 Install Prometheus & Grafana __BONUS SOLUTION__
 
 Install all of the requirements through the kube-prometheus helm chart. This includes the Prometheus, Grafana and Node Exporter packages and requires little to no configuration.
 Install the chart with the following command:
