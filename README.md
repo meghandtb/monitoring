@@ -234,71 +234,177 @@ Select Prometheus as the data source:
 
 <img width="1220" height="455" alt="image" src="https://github.com/user-attachments/assets/40bef5d4-276f-43ff-a2e0-6eeda3107bf1" />
 
-### Panel 1 — CPU Usage
+### Panel 1 — CPU Usage per pod
 
 ```promql
-sum(rate(container_cpu_usage_seconds_total{container!="POD"}[5m])) by (pod)
+sum(rate(container_cpu_usage_seconds_total{image!="", pod!=""}[5m])) by (pod, namespace)
 ```
+<img width="868" height="699" alt="image" src="https://github.com/user-attachments/assets/fc4a4d26-0f32-4306-a820-82d0c0f3a04a" />
 
-Visualization: Time series
 
-### Panel 2 — Memory Usage
+### Panel 2 — CPU Usage per node
 
 ```promql
-container_memory_usage_bytes{container!="",pod!=""}
+sum(rate(container_cpu_usage_seconds_total{image!=""}[5m])) by (node)
+
 ```
 
-Visualization: Gauge or Time series (convert bytes → MB/GB)
+<img width="869" height="669" alt="image" src="https://github.com/user-attachments/assets/08a10682-ef17-4b2c-bd0f-6397d5203928" />
 
-### Panel 3 — Container Count
+### Panel 3 — Memory per pod (MB)
 
 ```promql
-count(container_memory_usage_bytes{container!=""})
+sum(container_memory_working_set_bytes{image!="", pod!=""}) by (pod, namespace) / 1024 / 1024
 ```
-I have added the following variables to the dashboard to get a more detailed report:
-<img width="1212" height="456" alt="image" src="https://github.com/user-attachments/assets/9581b96e-5320-47d6-b254-1c81d0d84793" />
+<img width="1210" height="719" alt="image" src="https://github.com/user-attachments/assets/b6edde39-b668-4897-ae27-d2a721dcb6ad" />
+
+### Panel 4 — Memory per node (MB)
+
+```promql
+sum(container_memory_working_set_bytes{image!=""}) by (node) / 1024 / 1024
+```
+<img width="1201" height="740" alt="image" src="https://github.com/user-attachments/assets/1efab8cf-45ec-4cb1-af9e-f160e513b2f9" />
+
+### Panel 5 — Container Resource Usage Overview
+
+The panel showing container stats has a more complex setup, consisting of the following steps:
+
+Select the *Table* visualization type (instead of *Time series* as the other ones).
+This visualization is composed of 5 queries which reveal data about containers, such as memory, CPU, restarts. But first of all the variables used for these queries need to be defined. In the Dasboard Settings -> Edit -> Variables
+
+<img width="1210" height="477" alt="image" src="https://github.com/user-attachments/assets/d434d89b-4a64-43b2-bb3d-3c89b255da90" />
+
+```Classic Query -> namespace
+label_values(kube_pod_info, namespace)
+```
+
+```Classic Query -> pod
+label_values(kube_pod_info{namespace=~"$namespace"}, pod)
+```
+
+```Classic Query -> container
+label_values(kube_pod_container_info{namespace=~"$namespace", pod=~"$pod"}, container)
+```
+
+This will help in grouping collected data for better readability.
+For each variable maintain the same structure as bellow:
+
+<img width="767" height="828" alt="image" src="https://github.com/user-attachments/assets/1135abd9-cc30-46f7-957a-d649983ec71a" />
+
+After I configured these variables I can use them in the Dashboard to select for which namespace, pod and container I want the data to be shown.
+
+<img width="794" height="131" alt="image" src="https://github.com/user-attachments/assets/f9fce383-6bce-4774-9f71-757c7cad4a3c" />
 
 
-Visualization: Stat
+```promql
+sum(rate(container_cpu_usage_seconds_total{
+  image!="", 
+  container!="POD", 
+  container!="",
+  namespace=~"$namespace",
+  pod=~"$pod",
+  container=~"$container"
+}[5m])) by (namespace, pod, container)
+```
+<img width="870" height="684" alt="image" src="https://github.com/user-attachments/assets/c7925953-4a5c-4310-9005-037520da955b" />
 
-Save dashboard as **System & Container Overview**.
+In the *Options* section --> Legend --> Custom --> Give a suggestive name because this will be the a table column (in this particular case the value will be "CPU Usage" --> Format = Table --> Type = Instant (as seen in the image above)
 
-📸 *Screenshot placeholder: Dashboard with CPU, Memory, and Container panels.*
+The following queries will follow the same pattern. 
+
+```promql
+sum(container_memory_working_set_bytes{
+  image!="", 
+  container!="POD", 
+  container!="",
+  namespace=~"$namespace",
+  pod=~"$pod",
+  container=~"$container"
+}) by (namespace, pod, container) / 1024 / 1024
+```
+
+<img width="870" height="699" alt="image" src="https://github.com/user-attachments/assets/e4faebd8-d811-49c1-9309-85f668b9bc04" />
+
+```promql
+sum(kube_pod_container_resource_limits{
+  resource="memory",
+  container!="",
+  namespace=~"$namespace",
+  pod=~"$pod",
+  container=~"$container"
+}) by (namespace, pod, container) / 1024 / 1024
+```
+
+<img width="871" height="561" alt="image" src="https://github.com/user-attachments/assets/bb36e526-7422-44d0-af86-de02edfe9c97" />
+
+```promql
+sum(kube_pod_container_resource_limits{
+  resource="cpu",
+  container!="",
+  namespace=~"$namespace",
+  pod=~"$pod",
+  container=~"$container"
+}) by (namespace, pod, container)
+```
+
+<img width="863" height="285" alt="image" src="https://github.com/user-attachments/assets/ea7e6f77-83c4-44c8-9bbb-a73a16c172e0" />
+
+```promql
+sum(kube_pod_container_status_restarts_total{
+  namespace=~"$namespace",
+  pod=~"$pod",
+  container=~"$container"
+}) by (namespace, pod, container)
+```
+<img width="850" height="252" alt="image" src="https://github.com/user-attachments/assets/60614177-a995-4448-a29c-57a5be24c613" />
+
+In this stage the data collected does not make any sense, so we need to trasnform it and make it human readble.
+In the *Transformations* tab select the following:
+<img width="885" height="306" alt="image" src="https://github.com/user-attachments/assets/207803d8-201b-4994-8446-c06a347f0fd3" />
+
+The *Merge series/tables* transformation does not need any further configuration, so select the following in the *Group by* one.
+<img width="870" height="299" alt="image" src="https://github.com/user-attachments/assets/3626e545-657f-4834-85b3-c91f28f2b61c" />
+
+This will help in presenting the data group and eliminating duplicates.
+
+In the *Organize fields by name* select the following:
+<img width="873" height="381" alt="image" src="https://github.com/user-attachments/assets/934a98e9-1db5-4e1b-bc09-f3f344e5322d" />
+
+These values will be the column names so I needed them to be as easy to understand as possible.
+
+<img width="1204" height="739" alt="image" src="https://github.com/user-attachments/assets/4f61d1f1-e791-4464-9706-2f9f12bac0e8" />
 
 ---
 
 ## 🔹 7. Alerts in Grafana (10 pts)
 
-1. Edit **CPU Usage panel** → **Alert → Create alert rule**.
-2. Expression (CPU %):
+Access the newly created dashboard -->> CPU Usage per Node -->> Edit -->> Alert -->> New Alert Rule
+Condition: 
 
-   ```promql
-   avg(rate(container_cpu_usage_seconds_total{container!="",pod!=""}[5m])) * 100
-   ```
-3. Condition: **IS ABOVE 80 for 5m**.
-4. Save alert.
+<img width="1172" height="590" alt="image" src="https://github.com/user-attachments/assets/952ae348-8179-432c-bdc3-d2dabae7edf3" />
 
-📸 *Screenshot placeholder: Alert rule configuration.*
+Configure a folder for the alerts and a duration.
+
+<img width="830" height="813" alt="image" src="https://github.com/user-attachments/assets/fc61e838-f940-480a-be9e-b3582c080983" />
+
+Add a contact point and configure a notification message.
+<img width="794" height="803" alt="image" src="https://github.com/user-attachments/assets/8c01fea3-3137-4bfb-bd30-937b76a6798e" />
+
+Save alert.
+
+<img width="1935" height="828" alt="image" src="https://github.com/user-attachments/assets/2d3b20c5-00d8-46a8-bc32-28b7406d80d4" />
 
 ### Test the alert
 
 Run a stress container:
 
 ```bash
-kubectl run cpu-stress --rm -it --image=alpine -- /bin/sh
-apk add --no-cache stress
-stress --cpu 1 --timeout 300
+kubectl run -i --tty load-generator --image=busybox --restart=Never -- /bin/sh
+#and inside the container
+while true; do :; done
 ```
 
 Within 1–2 minutes, the Grafana alert should fire.
-
-
-
-For creating an alert for CPU usage:
-
-Access the newly created dashboard -->> CPU Usage Visualization -->> Edit -->> Alert -->> New Alert Rule
-
-<img width="1923" height="770" alt="image" src="https://github.com/user-attachments/assets/d9869e99-db18-4eae-b0f9-dce2f00ef957" />
 
 <img width="1935" height="828" alt="image" src="https://github.com/user-attachments/assets/2d3b20c5-00d8-46a8-bc32-28b7406d80d4" />
 
