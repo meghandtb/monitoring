@@ -226,10 +226,18 @@ And now you have a functional monitoring stack.
 
 ## 🔹 6. Create Grafana Dashboard
 
+Navigate to Dashboards -> New -> New Dashboard -> Add visualization 
+
+<img width="2560" height="808" alt="image" src="https://github.com/user-attachments/assets/d8733e1e-14f6-4469-8a6c-fe9a92df12ec" />
+
+Select Prometheus as the data source: 
+
+<img width="1220" height="455" alt="image" src="https://github.com/user-attachments/assets/40bef5d4-276f-43ff-a2e0-6eeda3107bf1" />
+
 ### Panel 1 — CPU Usage
 
 ```promql
-rate(container_cpu_usage_seconds_total{container!="",pod!=""}[5m])
+sum(rate(container_cpu_usage_seconds_total{container!="POD"}[5m])) by (pod)
 ```
 
 Visualization: Time series
@@ -247,6 +255,9 @@ Visualization: Gauge or Time series (convert bytes → MB/GB)
 ```promql
 count(container_memory_usage_bytes{container!=""})
 ```
+I have added the following variables to the dashboard to get a more detailed report:
+<img width="1212" height="456" alt="image" src="https://github.com/user-attachments/assets/9581b96e-5320-47d6-b254-1c81d0d84793" />
+
 
 Visualization: Stat
 
